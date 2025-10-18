@@ -20,21 +20,39 @@ Set-Alias ff fastfetch
 
 # Komorebi functions
 function ks {
-    Write-Host "Starting komorebi..."
+    # Check if running as administrator
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+    if ($isAdmin) {
+        Write-Host "Starting komorebi with ADMIN privileges..." -ForegroundColor Yellow
+    } else {
+        Write-Host "Starting komorebi..."
+    }
 
     # Start komorebi with custom config path
     $komorebicConfig = "$env:KOMOREBI_CONFIG_HOME\komorebi.json"
     $whkdConfig = "$env:KOMOREBI_CONFIG_HOME\whkdrc"
 
     # Start komorebi first (it needs to be running for bar and whkd)
-    komorebic start -c $komorebicConfig | Out-Null
+    if ($isAdmin) {
+        # When running from admin window, start komorebi.exe directly with admin privileges
+        $komorebiPath = (Get-Command komorebic).Source -replace 'komorebic\.exe$', 'komorebi.exe'
+        Start-Process -Verb RunAs -WindowStyle Hidden $komorebiPath -ArgumentList "--config", $komorebicConfig
+    } else {
+        # Normal non-admin start
+        komorebic start -c $komorebicConfig | Out-Null
+    }
 
     # Wait a moment for komorebi to initialize
     Start-Sleep -Seconds 2
 
     # Start whkd with custom config (if installed)
     if (Get-Command whkd -ErrorAction SilentlyContinue) {
-        Start-Process -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
+        if ($isAdmin) {
+            Start-Process -Verb RunAs -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
+        } else {
+            Start-Process -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
+        }
     } else {
         Write-Host "Warning: whkd not found. Install with: winget install LGUG2Z.whkd"
     }
@@ -49,7 +67,11 @@ function ks {
 
     foreach ($config in $barConfigs) {
         if (Test-Path $config) {
-            Start-Process -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
+            if ($isAdmin) {
+                Start-Process -Verb RunAs -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
+            } else {
+                Start-Process -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
+            }
         }
     }
 }
@@ -58,6 +80,16 @@ function kq {
     komorebic stop | Out-Null
     Stop-Process -Name whkd -ErrorAction SilentlyContinue
     Stop-Process -Name komorebi-bar -ErrorAction SilentlyContinue
+}
+
+function ks-onboot-true {
+    Write-Host "Enabling komorebi autostart..." -ForegroundColor Cyan
+    & "$env:USERPROFILE\.config\komorebi\register-startup.ps1"
+}
+
+function ks-onboot-false {
+    Write-Host "Disabling komorebi autostart..." -ForegroundColor Cyan
+    & "$env:USERPROFILE\.config\komorebi\remove-autostart.ps1"
 }
 
 # Git diff helper
