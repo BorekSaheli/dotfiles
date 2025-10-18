@@ -1,0 +1,10 @@
+# External repositories managed by chezmoi
+
+# Neovim configuration - separate repo
+# Uses ~/.config/nvim on all platforms (macOS, Linux, and Windows)
+[".config/nvim"]
+    type = "git-repo"
+    url = "git@github.com:BorekSaheli/nvim.git"
+    refreshPeriod = "168h"  # Check for updates weekly
+    [".config/nvim".pull]
+        args = ["--ff-only"]  # Only fast-forward pulls to avoid merge conflicts
