@@ -1,0 +1,49 @@
+{{- if eq .chezmoi.os "windows" -}}
+#!/usr/bin/env pwsh
+# Setup PowerShell profile loaders (Windows only)
+# This script runs once to set up profile loaders for both PowerShell versions
+
+$ErrorActionPreference = 'Stop'
+
+# Get the actual Documents folder (handles OneDrive redirection)
+$documentsPath = [Environment]::GetFolderPath('MyDocuments')
+
+# PowerShell 7 profile directory
+$ps7ProfileDir = Join-Path $documentsPath 'PowerShell'
+$ps7ProfileAllHosts = Join-Path $ps7ProfileDir 'profile.ps1'
+$ps7ProfileCurrentHost = Join-Path $ps7ProfileDir 'Microsoft.PowerShell_profile.ps1'
+
+# Windows PowerShell 5.1 profile directory
+$ps51ProfileDir = Join-Path $documentsPath 'WindowsPowerShell'
+$ps51ProfileAllHosts = Join-Path $ps51ProfileDir 'profile.ps1'
+$ps51ProfileCurrentHost = Join-Path $ps51ProfileDir 'Microsoft.PowerShell_profile.ps1'
+
+# Loader content
+$loaderContent = @'
+# PowerShell Profile Loader
+# Loads the main profile managed by chezmoi
+. "$env:USERPROFILE\.config\powershell\main_profile.ps1"
+'@
+
+# Create PowerShell 7 loaders (both AllHosts and CurrentHost)
+if (-not (Test-Path $ps7ProfileDir)) {
+    New-Item -ItemType Directory -Path $ps7ProfileDir -Force | Out-Null
+    Write-Host "Created directory: $ps7ProfileDir"
+}
+Set-Content -Path $ps7ProfileAllHosts -Value $loaderContent -Force
+Write-Host "Created PowerShell 7 loader (AllHosts): $ps7ProfileAllHosts"
+Set-Content -Path $ps7ProfileCurrentHost -Value $loaderContent -Force
+Write-Host "Created PowerShell 7 loader (CurrentHost): $ps7ProfileCurrentHost"
+
+# Create Windows PowerShell 5.1 loaders (both AllHosts and CurrentHost)
+if (-not (Test-Path $ps51ProfileDir)) {
+    New-Item -ItemType Directory -Path $ps51ProfileDir -Force | Out-Null
+    Write-Host "Created directory: $ps51ProfileDir"
+}
+Set-Content -Path $ps51ProfileAllHosts -Value $loaderContent -Force
+Write-Host "Created Windows PowerShell 5.1 loader (AllHosts): $ps51ProfileAllHosts"
+Set-Content -Path $ps51ProfileCurrentHost -Value $loaderContent -Force
+Write-Host "Created Windows PowerShell 5.1 loader (CurrentHost): $ps51ProfileCurrentHost"
+
+Write-Host "PowerShell profile loaders setup complete!"
+{{- end -}}

@@ -5,6 +5,6 @@
 [".config/nvim"]
     type = "git-repo"
     url = "git@github.com:BorekSaheli/nvim.git"
-    refreshPeriod = "168h"  # Check for updates weekly
+    refreshPeriod = "0"
     [".config/nvim".pull]
         args = ["--ff-only"]  # Only fast-forward pulls to avoid merge conflicts
