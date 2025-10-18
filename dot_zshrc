@@ -1,0 +1,17 @@
+# Prioritize Homebrew Python and global tools
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+
+# Aliases
+alias ff='fastfetch'
+
+# Starship configuration
+export STARSHIP_CONFIG=~/.config/starship/starship.toml
+eval "$(starship init zsh)"
+
+# Conda setup - available but not auto-activated
+# Use 'conda activate <env>' manually when needed
+if [ -f "/Users/borek/tudelft-conda/etc/profile.d/conda.sh" ]; then
+    . "/Users/borek/tudelft-conda/etc/profile.d/conda.sh"
+    # Disable conda's auto prompt modification - let Starship handle it
+    conda config --set changeps1 false 2>/dev/null
+fi
