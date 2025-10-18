@@ -1,0 +1,13 @@
+# Platform-specific ignore patterns
+
+{{- if eq .chezmoi.os "windows" }}
+# Ignore Unix/macOS shell configs on Windows
+.zshrc
+.zprofile
+{{- end }}
+
+{{- if ne .chezmoi.os "windows" }}
+# Ignore Windows-only configs on Unix/macOS
+Documents/PowerShell/
+.config/komorebi/
+{{- end }}
