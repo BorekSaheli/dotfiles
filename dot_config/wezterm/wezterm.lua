@@ -191,20 +191,31 @@ end
 -- }
 
 
--- Apply process-specific colors
--- Commented out because get_process_colors function is not defined
--- wezterm.on('update-right-status', function(window, pane)
---   local info = pane:get_foreground_process_info()
---   if info and info.name then
---     local colors = get_process_colors(info.name)
---     if colors then
---       local overrides = window:get_config_overrides() or {}
---       overrides.colors = overrides.colors or {}
---       overrides.colors.ansi = colors.ansi
---       overrides.colors.brights = colors.brights
---       window:set_config_overrides(overrides)
---     end
---   end
--- end)
+-- Custom tab title formatting to show nvim instead of child processes
+wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
+  local pane = tab.active_pane
+  local title = tab.tab_index + 1 .. ': '
+
+  -- Check if nvim is running (check process tree)
+  local fg_info = pane.foreground_process_name
+  if fg_info and fg_info:lower():find('nvim') then
+    title = title .. 'nvim'
+  else
+    -- Check user vars
+    local user_vars = pane.user_vars or {}
+    if user_vars.NVIM then
+      title = title .. 'nvim'
+    else
+      -- Fallback to the pane title and remove .exe extension
+      local pane_title = pane.title or 'shell'
+      pane_title = pane_title:gsub('%.exe$', '')
+      title = title .. pane_title
+    end
+  end
+
+  return {
+    { Text = ' ' .. title .. ' ' },
+  }
+end)
 
 return config
