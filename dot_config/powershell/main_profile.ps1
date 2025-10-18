@@ -5,6 +5,9 @@
 # Set XDG_CONFIG_HOME so Neovim uses ~/.config/nvim
 $env:XDG_CONFIG_HOME = "$env:USERPROFILE\.config"
 
+# Set Komorebi config path
+$env:KOMOREBI_CONFIG_HOME = "$env:USERPROFILE\.config\komorebi"
+
 # Initialize Starship prompt
 Invoke-Expression (&starship init powershell)
 
@@ -17,8 +20,42 @@ Set-Alias ff fastfetch
 $env:Path += ";C:\Users\borek.saheli\tools\komorebi"
 
 # Komorebi functions
-function ks { komorebic start --whkd --bar }
-function kq { komorebic stop --whkd --bar }
+function ks {
+    Write-Host "Starting komorebi..."
+
+    # Start komorebi with custom config path
+    $komorebicConfig = "$env:KOMOREBI_CONFIG_HOME\komorebi.json"
+    $whkdConfig = "$env:KOMOREBI_CONFIG_HOME\whkdrc"
+
+    # Start komorebi first (it needs to be running for bar and whkd)
+    komorebic start -c $komorebicConfig | Out-Null
+
+    # Wait a moment for komorebi to initialize
+    Start-Sleep -Seconds 2
+
+    # Start whkd with custom config
+    Start-Process -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
+
+    # Start komorebi-bar instances for each monitor
+    $barConfigs = @(
+        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.json",
+        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor0.json",
+        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor1.json",
+        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor2.json"
+    )
+
+    foreach ($config in $barConfigs) {
+        if (Test-Path $config) {
+            Start-Process -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
+        }
+    }
+}
+function kq {
+    Write-Host "Closing komorebi..."
+    komorebic stop | Out-Null
+    Stop-Process -Name whkd -ErrorAction SilentlyContinue
+    Stop-Process -Name komorebi-bar -ErrorAction SilentlyContinue
+}
 
 # Git diff helper
 function showdiff { git diff --cached --stat }
