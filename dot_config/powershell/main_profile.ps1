@@ -8,6 +8,9 @@ $env:XDG_CONFIG_HOME = "$env:USERPROFILE\.config"
 # Set Komorebi config path
 $env:KOMOREBI_CONFIG_HOME = "$env:USERPROFILE\.config\komorebi"
 
+# Set Starship config path
+$env:STARSHIP_CONFIG = "$env:USERPROFILE\.config\starship\starship.toml"
+
 # Initialize Starship prompt
 Invoke-Expression (&starship init powershell)
 
