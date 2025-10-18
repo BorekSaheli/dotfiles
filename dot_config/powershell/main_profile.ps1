@@ -16,7 +16,9 @@ Invoke-Expression (&starship init powershell)
 
 # Aliases
 Set-Alias vim nvim
-Set-Alias v viktor-cli
+Set-Alias vi nvim
+Set-Alias v nvim
+Set-Alias viktor viktor-cli
 Set-Alias ff fastfetch
 
 # Path additions - removed old komorebi tools path (now using winget version)

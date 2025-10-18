@@ -1,6 +1,10 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
+-- Import and apply nvim jump module
+local nvim_jump = require 'nvim_jump'
+nvim_jump.apply_to_config(config)
+
 -- Platform detection
 local is_windows = wezterm.target_triple:find("windows") ~= nil
 local is_macos = wezterm.target_triple:find("darwin") ~= nil
@@ -188,18 +192,19 @@ end
 
 
 -- Apply process-specific colors
-wezterm.on('update-right-status', function(window, pane)
-  local info = pane:get_foreground_process_info()
-  if info and info.name then
-    local colors = get_process_colors(info.name)
-    if colors then
-      local overrides = window:get_config_overrides() or {}
-      overrides.colors = overrides.colors or {}
-      overrides.colors.ansi = colors.ansi
-      overrides.colors.brights = colors.brights
-      window:set_config_overrides(overrides)
-    end
-  end
-end)
+-- Commented out because get_process_colors function is not defined
+-- wezterm.on('update-right-status', function(window, pane)
+--   local info = pane:get_foreground_process_info()
+--   if info and info.name then
+--     local colors = get_process_colors(info.name)
+--     if colors then
+--       local overrides = window:get_config_overrides() or {}
+--       overrides.colors = overrides.colors or {}
+--       overrides.colors.ansi = colors.ansi
+--       overrides.colors.brights = colors.brights
+--       window:set_config_overrides(overrides)
+--     end
+--   end
+-- end)
 
 return config
