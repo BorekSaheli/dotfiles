@@ -16,8 +16,7 @@ Set-Alias vim nvim
 Set-Alias v viktor-cli
 Set-Alias ff fastfetch
 
-# Path additions
-$env:Path += ";C:\Users\borek.saheli\tools\komorebi"
+# Path additions - removed old komorebi tools path (now using winget version)
 
 # Komorebi functions
 function ks {
@@ -33,8 +32,12 @@ function ks {
     # Wait a moment for komorebi to initialize
     Start-Sleep -Seconds 2
 
-    # Start whkd with custom config
-    Start-Process -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
+    # Start whkd with custom config (if installed)
+    if (Get-Command whkd -ErrorAction SilentlyContinue) {
+        Start-Process -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
+    } else {
+        Write-Host "Warning: whkd not found. Install with: winget install LGUG2Z.whkd"
+    }
 
     # Start komorebi-bar instances for each monitor
     $barConfigs = @(
