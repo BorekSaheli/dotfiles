@@ -1,8 +1,19 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
--- Shell configuration to match your PowerShell setup
-config.default_prog = { 'pwsh.exe', '-NoLogo' }
+-- Platform detection
+local is_windows = wezterm.target_triple:find("windows") ~= nil
+local is_macos = wezterm.target_triple:find("darwin") ~= nil
+local is_linux = wezterm.target_triple:find("linux") ~= nil
+
+-- Shell configuration - platform specific
+if is_windows then
+  config.default_prog = { 'pwsh.exe', '-NoLogo' }
+elseif is_macos then
+  config.default_prog = { '/bin/zsh', '-l' }
+elseif is_linux then
+  config.default_prog = { '/bin/zsh', '-l' }
+end
 
 -- Font configuration
 config.font = wezterm.font {
@@ -143,18 +154,31 @@ config.keys = {
 	},
 }
 
--- Launch behavior to integrate with your setup
-config.launch_menu = {
-	{
-		label = 'PowerShell',
-		args = { 'pwsh.exe', '-NoLogo' },
-	},
-	{
-		label = 'PowerShell (Admin)',
-		args = { 'pwsh.exe', '-NoLogo' },
-		cwd = 'C:\\',
-	},
-}
+-- Launch menu - platform specific
+if is_windows then
+  config.launch_menu = {
+    {
+      label = 'PowerShell',
+      args = { 'pwsh.exe', '-NoLogo' },
+    },
+    {
+      label = 'PowerShell (Admin)',
+      args = { 'pwsh.exe', '-NoLogo' },
+      cwd = 'C:\\',
+    },
+  }
+elseif is_macos or is_linux then
+  config.launch_menu = {
+    {
+      label = 'Zsh',
+      args = { '/bin/zsh', '-l' },
+    },
+    {
+      label = 'Bash',
+      args = { '/bin/bash', '-l' },
+    },
+  }
+end
 
 -- -- Fix directory changes when Neovim LSP processes (like Pyright) run
 -- -- Disable OSC 7 directory tracking to prevent path pollution from LSP processes
