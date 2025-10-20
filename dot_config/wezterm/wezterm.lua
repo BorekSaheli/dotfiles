@@ -196,20 +196,25 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_wid
   local pane = tab.active_pane
   local title = tab.tab_index + 1 .. ': '
 
-  -- Check if nvim is running (check process tree)
-  local fg_info = pane.foreground_process_name
-  if fg_info and fg_info:lower():find('nvim') then
+  -- Check user vars first - most reliable way to detect nvim
+  local user_vars = pane.user_vars or {}
+  if user_vars.NVIM or user_vars.NVIM_LISTEN_ADDRESS then
     title = title .. 'nvim'
   else
-    -- Check user vars
-    local user_vars = pane.user_vars or {}
-    if user_vars.NVIM then
+    -- Check if nvim is in the foreground process name
+    local fg_name = pane.foreground_process_name
+    if fg_name and fg_name:lower():find('nvim') then
       title = title .. 'nvim'
     else
-      -- Fallback to the pane title and remove .exe extension
+      -- Check the pane title for nvim
       local pane_title = pane.title or 'shell'
-      pane_title = pane_title:gsub('%.exe$', '')
-      title = title .. pane_title
+      if pane_title:lower():find('nvim') then
+        title = title .. 'nvim'
+      else
+        -- Fallback to the pane title and remove .exe extension
+        pane_title = pane_title:gsub('%.exe$', '')
+        title = title .. pane_title
+      end
     end
   end
 
