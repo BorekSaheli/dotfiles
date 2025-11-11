@@ -15,6 +15,7 @@ $env:STARSHIP_CONFIG = "$env:USERPROFILE\.config\starship\starship.toml"
 Invoke-Expression (&starship init powershell)
 
 # Aliases
+Set-Alias lg lazygit
 Set-Alias vim nvim
 Set-Alias vi nvim
 Set-Alias v nvim

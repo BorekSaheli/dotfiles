@@ -39,7 +39,7 @@ config.animation_fps = 60
 config.max_fps = 60
 
 -- Window configuration
-config.window_background_opacity = 0.95
+config.window_background_opacity = 1
 config.inactive_pane_hsb = {
   hue = 1.0,
   saturation = 1,
