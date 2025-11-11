@@ -1,0 +1,22 @@
+# Covers PyCharm, Visual Studio Code
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+.claude/
+
+
+### OSX ###
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Virtual environment
+venv/
+.env
+.venv
+uv.lock
+
+# Microsoft temporary/backup files
+[~][$]*
