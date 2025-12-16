@@ -24,7 +24,13 @@ config.font = wezterm.font {
 	family = 'JetBrainsMono Nerd Font Mono',
 	harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' },
 }
-config.font_size = 11.0
+
+-- Platform-specific font size
+if is_macos then
+  config.font_size = 15.0
+else
+  config.font_size = 12.0
+end
 
 
 -- Color scheme
@@ -35,10 +41,21 @@ config.color_scheme = 'Catppuccin Mocha'
 config.front_end = 'WebGpu'
 -- Simplified GPU preference - let WezTerm auto-detect NVIDIA GPU
 config.webgpu_force_fallback_adapter = false
-config.animation_fps = 60
-config.max_fps = 60
+config.animation_fps = 120
+config.max_fps = 120
 
 -- Window configuration
+-- Platform-specific initial window size
+if is_macos then
+  config.initial_cols = 200
+  config.initial_rows = 60
+  -- Start maximized (not fullscreen) on macOS
+  wezterm.on('gui-startup', function(cmd)
+    local tab, pane, window = wezterm.mux.spawn_window(cmd or {})
+    window:gui_window():maximize()
+  end)
+end
+
 config.window_background_opacity = 1
 config.inactive_pane_hsb = {
   hue = 1.0,
@@ -93,6 +110,11 @@ config.window_padding = {
   top = 10,
   bottom = 10,
 }
+
+-- Smooth scrolling
+config.enable_scroll_bar = false
+config.min_scroll_bar_height = '2cell'
+config.scrollback_lines = 10000
 
 
 

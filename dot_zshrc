@@ -3,6 +3,9 @@ export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 
 # Aliases
 alias ff='fastfetch'
+alias vim='nvim'
+alias vi='nvim'
+alias v='nvim'
 
 # Starship configuration
 export STARSHIP_CONFIG=~/.config/starship/starship.toml
