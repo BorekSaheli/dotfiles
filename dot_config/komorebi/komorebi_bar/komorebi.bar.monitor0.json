@@ -49,7 +49,7 @@
     },
     {
       "Network": {
-        "enable": true,
+        "enable": false,
         "show_total_data_transmitted": false,
         "show_network_activity": true
       }

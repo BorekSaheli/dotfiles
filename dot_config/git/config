@@ -22,6 +22,7 @@
     defaultBranch = main
 [core]
     excludesFile = ~/.config/git/ignore
+	hooksPath = ~/.config/git/hooks
 [includeIf "gitdir:C:/Users/borek.saheli/code/personal/**"]
 	path = ~/.config/git/config-personal
 

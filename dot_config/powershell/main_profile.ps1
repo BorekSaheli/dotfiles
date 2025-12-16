@@ -21,6 +21,7 @@ Set-Alias vi nvim
 Set-Alias v nvim
 Set-Alias viktor viktor-cli
 Set-Alias ff fastfetch
+Set-Alias activate venv\Scripts\Activate
 
 # Path additions - removed old komorebi tools path (now using winget version)
 
@@ -63,9 +64,11 @@ function ks {
         Write-Host "Warning: whkd not found. Install with: winget install LGUG2Z.whkd"
     }
 
-    # Start komorebi-bar instances for each monitor
+    # Start komorebi-bar instances for each monitor (skip generic config to avoid conflicts)
+    # Add delay to ensure komorebi is fully initialized
+    Start-Sleep -Seconds 1
+
     $barConfigs = @(
-        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.json",
         "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor0.json",
         "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor1.json",
         "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor2.json"
@@ -73,11 +76,13 @@ function ks {
 
     foreach ($config in $barConfigs) {
         if (Test-Path $config) {
+            Write-Host "Starting bar with config: $config"
             if ($isAdmin) {
                 Start-Process -Verb RunAs -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
             } else {
                 Start-Process -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
             }
+            Start-Sleep -Milliseconds 500
         }
     }
 }

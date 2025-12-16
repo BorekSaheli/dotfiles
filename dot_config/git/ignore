@@ -6,7 +6,6 @@ Thumbs.db
 *.swp
 .claude/
 
-
 ### OSX ###
 *.DS_Store
 .AppleDouble
