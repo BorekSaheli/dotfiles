@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+# Cross-platform pre-commit hook managed by chezmoi.
+# - Prints commit/branch quick reference.
+# - Enforces branch naming conventions.
+
+set -eu
+
+print_guide() {
+	cat <<'EOF'
+Commit types (subject must be "type(scope): message"):
+  feat, fix, docs, style, refactor, perf, test, chore, build, ci,
+  security, deps, hotfix, revert, ui, config, locale, a11y, seo, wip
+
+Branch prefixes:
+  feature/, fix/, bugfix/, hotfix/, release/, docs/, refactor/, test/, chore/,
+  perf/, build/, ci/, experiment/, spike/, ui/, config/, security/
+EOF
+}
+
+validate_branch() {
+	branch="$(git symbolic-ref --quiet --short HEAD || true)"
+	[ -z "$branch" ] && return 0
+
+	case "$branch" in
+		main|master|develop) return 0 ;;
+		feature/*|fix/*|bugfix/*|hotfix/*|release/*|docs/*|refactor/*|test/*|chore/*|perf/*|build/*|ci/*|experiment/*|spike/*|ui/*|config/*|security/*)
+			return 0
+			;;
+		*)
+			printf 'Branch "%s" does not match allowed prefixes.\n' "$branch" >&2
+			return 1
+			;;
+	esac
+}
+
+print_guide
+validate_branch

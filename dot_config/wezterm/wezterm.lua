@@ -56,7 +56,7 @@ if is_macos then
   end)
 end
 
-config.window_background_opacity = 1
+config.window_background_opacity = 0.8
 config.inactive_pane_hsb = {
   hue = 1.0,
   saturation = 1,
