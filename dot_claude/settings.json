@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill",
+      "Bash(az:*)",
+      "Bash"
+    ]
+  },
+  "enabledPlugins": {
+    "dd-basic-workflow@dd-claude-plugins": true
+  },
+  "model": "opus"
+}
