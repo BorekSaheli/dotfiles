@@ -32,6 +32,13 @@
     "fps": 60,
     "style": "EaseOutSine"
   },
+  "manage_rules": [
+    {
+      "kind": "Exe",
+      "id": "claude.exe",
+      "matching_strategy": "Equals"
+    }
+  ],
   "monitors": [
     {
       "workspaces": [

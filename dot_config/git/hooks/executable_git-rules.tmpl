@@ -1,0 +1,231 @@
+#!/usr/bin/env sh
+
+# Git rules and validation functions - shared script managed by chezmoi.
+# Source this file in hooks or run directly for `git rules` command.
+
+set -eu
+
+# ============================================================================
+# ANSI Color Definitions
+# ============================================================================
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+# ============================================================================
+# Validation Patterns
+# ============================================================================
+
+# Commit types
+COMMIT_TYPES="feat|fix|docs|style|refactor|perf|test|chore|build|ci|security|revert|ui|config|wip|experiment"
+
+# Commit message regex: type(scope): message OR PR ID formats
+TYPE_REGEX="^($COMMIT_TYPES)(\([^)]+\))?: .+"
+PR_ID_REGEX1="^#?[0-9]+: .+"
+PR_ID_REGEX2="^\(#[0-9]+\) .+"
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+print_error() {
+	printf "${RED}${BOLD}%s${RESET} %s\n" "ERROR:" "$1" >&2
+}
+
+print_warning() {
+	printf "${YELLOW}${BOLD}%s${RESET} %s\n" "WARNING:" "$1" >&2
+}
+
+# ============================================================================
+# Validation Functions
+# ============================================================================
+
+validate_commit_msg() {
+	msg_file="$1"
+	subject="$(sed -n '1p' "$msg_file" | tr -d '\r')"
+
+	# Allow merge commits
+	if printf '%s' "$subject" | grep -Eq '^Merge '; then
+		return 0
+	fi
+
+	# Allow revert commits
+	if printf '%s' "$subject" | grep -Eq '^Revert '; then
+		return 0
+	fi
+
+	# Check type(scope): format
+	if printf '%s' "$subject" | grep -Eq "$TYPE_REGEX"; then
+		return 0
+	fi
+
+	# Check PR ID formats: #123456: or 123456: or (#123456)
+	if printf '%s' "$subject" | grep -Eq "$PR_ID_REGEX1"; then
+		return 0
+	fi
+	if printf '%s' "$subject" | grep -Eq "$PR_ID_REGEX2"; then
+		return 0
+	fi
+
+	# Validation failed - show error
+	printf "\n" >&2
+	printf "${RED}${BOLD}%s${RESET} ${RED}Invalid commit message${RESET}\n" "x" >&2
+	printf "\n" >&2
+	printf "  ${DIM}Your message:${RESET} ${BOLD}\"%s\"${RESET}\n" "$subject" >&2
+	printf "\n" >&2
+	printf "  ${CYAN}Expected format:${RESET}\n" >&2
+	printf "    ${DIM}type(scope): description${RESET}\n" >&2
+	printf "    ${DIM}#123456: description${RESET}\n" >&2
+	printf "    ${DIM}123456: description${RESET}\n" >&2
+	printf "    ${DIM}(#123456) description${RESET}\n" >&2
+	printf "\n" >&2
+	printf "  ${CYAN}Allowed types:${RESET}\n" >&2
+	printf "    ${GREEN}feat  fix  docs  style  refactor  perf  test  chore${RESET}\n" >&2
+	printf "    ${GREEN}build ci   security  revert  ui  config  wip  experiment${RESET}\n" >&2
+	printf "\n" >&2
+	printf "  ${CYAN}Examples:${RESET}\n" >&2
+	printf "    ${DIM}feat(auth): add OAuth2 login support${RESET}\n" >&2
+	printf "    ${DIM}fix(api): handle null response gracefully${RESET}\n" >&2
+	printf "    ${DIM}#374367: implement new feature${RESET}\n" >&2
+	printf "\n" >&2
+	return 1
+}
+
+validate_commit_subject() {
+	subject="$1"
+	sha="$2"
+
+	# Allow merge commits
+	if printf '%s' "$subject" | grep -Eq '^Merge '; then
+		return 0
+	fi
+
+	# Allow revert commits
+	if printf '%s' "$subject" | grep -Eq '^Revert '; then
+		return 0
+	fi
+
+	# Check type(scope): format
+	if printf '%s' "$subject" | grep -Eq "$TYPE_REGEX"; then
+		return 0
+	fi
+
+	# Check PR ID formats
+	if printf '%s' "$subject" | grep -Eq "$PR_ID_REGEX1"; then
+		return 0
+	fi
+	if printf '%s' "$subject" | grep -Eq "$PR_ID_REGEX2"; then
+		return 0
+	fi
+
+	# Validation failed
+	printf "\n" >&2
+	printf "${RED}${BOLD}%s${RESET} ${RED}Invalid commit message in %s${RESET}\n" "x" "$sha" >&2
+	printf "  ${DIM}Subject:${RESET} ${BOLD}\"%s\"${RESET}\n" "$subject" >&2
+	printf "  ${DIM}Run 'git rules' for valid formats.${RESET}\n" >&2
+	printf "\n" >&2
+	return 1
+}
+
+validate_branch() {
+	branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+	[ -z "$branch" ] && return 0
+
+	case "$branch" in
+		main|master|develop) return 0 ;;
+		feature/*|fix/*|bugfix/*|hotfix/*|release/*|docs/*|refactor/*|test/*|chore/*|perf/*|build/*|ci/*|experiment/*|spike/*|ui/*|config/*|security/*)
+			return 0
+			;;
+		*)
+			printf "\n" >&2
+			printf "${RED}${BOLD}%s${RESET} ${RED}Invalid branch name${RESET}\n" "x" >&2
+			printf "\n" >&2
+			printf "  ${DIM}Your branch:${RESET} ${BOLD}\"%s\"${RESET}\n" "$branch" >&2
+			printf "\n" >&2
+			printf "  ${CYAN}Protected branches:${RESET}\n" >&2
+			printf "    ${GREEN}main  master  develop${RESET}\n" >&2
+			printf "\n" >&2
+			printf "  ${CYAN}Required prefixes:${RESET}\n" >&2
+			printf "    ${GREEN}feature/  fix/  bugfix/  hotfix/  release/  docs/${RESET}\n" >&2
+			printf "    ${GREEN}refactor/  test/  chore/  perf/  build/  ci/${RESET}\n" >&2
+			printf "    ${GREEN}experiment/  spike/  ui/  config/  security/${RESET}\n" >&2
+			printf "\n" >&2
+			printf "  ${CYAN}Example:${RESET}\n" >&2
+			printf "    ${DIM}git checkout -b feature/my-new-feature${RESET}\n" >&2
+			printf "\n" >&2
+			return 1
+			;;
+	esac
+}
+
+# ============================================================================
+# Print Rules (for `git rules` command)
+# ============================================================================
+
+print_rules() {
+	printf "\n"
+	printf "${CYAN}${BOLD}+--------------------------------------------------------------+${RESET}\n"
+	printf "${CYAN}${BOLD}|                          GIT RULES                          |${RESET}\n"
+	printf "${CYAN}${BOLD}+--------------------------------------------------------------+${RESET}\n"
+	printf "\n"
+
+	printf "${BOLD}${BLUE}COMMIT MESSAGE FORMAT${RESET}\n"
+	printf "  ${DIM}type(scope): description${RESET}    ${DIM}or${RESET}    ${DIM}#ID: description${RESET}\n"
+	printf "\n"
+
+	printf "${BOLD}${BLUE}ALLOWED TYPES${RESET}\n"
+	printf "  ${GREEN}feat${RESET}        ${DIM}New feature${RESET}\n"
+	printf "  ${GREEN}fix${RESET}         ${DIM}Bug fix${RESET}\n"
+	printf "  ${GREEN}docs${RESET}        ${DIM}Documentation only${RESET}\n"
+	printf "  ${GREEN}style${RESET}       ${DIM}Code style (formatting)${RESET}\n"
+	printf "  ${GREEN}refactor${RESET}    ${DIM}Code change (no feature/fix)${RESET}\n"
+	printf "  ${GREEN}perf${RESET}        ${DIM}Performance improvement${RESET}\n"
+	printf "  ${GREEN}test${RESET}        ${DIM}Adding/fixing tests${RESET}\n"
+	printf "  ${GREEN}chore${RESET}       ${DIM}Maintenance tasks${RESET}\n"
+	printf "  ${GREEN}build${RESET}       ${DIM}Build system changes${RESET}\n"
+	printf "  ${GREEN}ci${RESET}          ${DIM}CI configuration${RESET}\n"
+	printf "  ${GREEN}security${RESET}    ${DIM}Security fix${RESET}\n"
+	printf "  ${GREEN}revert${RESET}      ${DIM}Revert previous commit${RESET}\n"
+	printf "  ${GREEN}ui${RESET}          ${DIM}UI/UX changes${RESET}\n"
+	printf "  ${GREEN}config${RESET}      ${DIM}Configuration changes${RESET}\n"
+	printf "  ${GREEN}wip${RESET}         ${DIM}Work in progress${RESET}\n"
+	printf "  ${GREEN}experiment${RESET}  ${DIM}Experimental changes${RESET}\n"
+	printf "\n"
+
+	printf "${BOLD}${BLUE}PR/ISSUE REFERENCE${RESET} ${DIM}(alternative to type)${RESET}\n"
+	printf "  ${DIM}#123456: description${RESET}\n"
+	printf "  ${DIM}123456: description${RESET}\n"
+	printf "  ${DIM}(#123456) description${RESET}\n"
+	printf "\n"
+
+	printf "${BOLD}${BLUE}BRANCH NAMING${RESET}\n"
+	printf "  ${CYAN}Protected:${RESET} ${GREEN}main${RESET}  ${GREEN}master${RESET}  ${GREEN}develop${RESET}\n"
+	printf "  ${CYAN}Prefixes:${RESET}  ${GREEN}feature/${RESET} ${GREEN}fix/${RESET} ${GREEN}bugfix/${RESET} ${GREEN}hotfix/${RESET} ${GREEN}release/${RESET} ${GREEN}docs/${RESET}\n"
+	printf "             ${GREEN}refactor/${RESET} ${GREEN}test/${RESET} ${GREEN}chore/${RESET} ${GREEN}perf/${RESET} ${GREEN}build/${RESET} ${GREEN}ci/${RESET}\n"
+	printf "             ${GREEN}experiment/${RESET} ${GREEN}spike/${RESET} ${GREEN}ui/${RESET} ${GREEN}config/${RESET} ${GREEN}security/${RESET}\n"
+	printf "\n"
+
+	printf "${BOLD}${BLUE}EXAMPLES${RESET}\n"
+	printf "  ${DIM}feat(auth): add OAuth2 login support${RESET}\n"
+	printf "  ${DIM}fix(api): handle null response gracefully${RESET}\n"
+	printf "  ${DIM}#374367: implement user dashboard${RESET}\n"
+	printf "  ${DIM}experiment/new-caching-strategy${RESET}\n"
+	printf "\n"
+}
+
+# ============================================================================
+# Main - when called directly, print rules
+# ============================================================================
+
+# Check if script is being sourced or executed directly
+# When sourced, $0 will be the sourcing script, not this file
+case "${0##*/}" in
+	git-rules|executable_git-rules.tmpl)
+		print_rules
+		;;
+esac

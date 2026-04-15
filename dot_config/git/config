@@ -6,6 +6,7 @@
 	undo = reset --soft HEAD~1
 	stash-all = stash save --include-untracked
 	alias = !git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /
+	rules = !~/.config/git/hooks/git-rules
 [safe]
 	directory = C:/Users/borek.saheli/.local/share/chezmoi
 	directory = C:/Users/borek.saheli/.config/nvim

@@ -62,31 +62,9 @@ config.inactive_pane_hsb = {
   saturation = 1,
   brightness = 1,
 }
--- Keep the tab bar customization but remove problematic color overrides
 config.colors = {
-  -- Override colors for better readability with colored backgrounds
-  foreground = '#ffffff', -- Ensure foreground text is pure white
-  background = '#000000', -- Ensure background is pure black for contrast
-  ansi = {
-    '#000000', -- black - dark for contrast
-    '#ff6b6b', -- red - bright for visibility
-    '#34bd4b', -- green - bright for visibility
-    '#dfae00', -- yellow - bright for visibility
-    '#4dabf7', -- blue - bright for visibility
-    '#a26bfa', -- magenta - bright for visibility
-    '#8ce99a', -- cyan - bright for visibility
-    '#ffffff', -- white - pure white for maximum contrast
-  },
-  brights = {
-    '#404040', -- bright black (gray)
-    '#ff8787', -- bright red
-    '#69db7c', -- bright green
-    '#ffe066', -- bright yellow
-    '#74c0fc', -- bright blue
-    '#d0bfff', -- bright magenta
-    '#96f2d7', -- bright cyan
-    '#ffffff', -- bright white - pure white
-  },
+  background = '#000000', -- Black background
+  foreground = '#cdd6f4', -- Default text color (without background) - Catppuccin Mocha text
   tab_bar = {
     background = '#000000',
     active_tab = {

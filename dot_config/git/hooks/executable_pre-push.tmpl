@@ -1,35 +1,19 @@
 #!/usr/bin/env sh
 
 # Cross-platform pre-push hook managed by chezmoi.
-# Validates commit subjects match allowed types and prints a quick reference.
+# Validates all commit messages in push range. Silent on success.
 
 set -eu
 
-type_regex='^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security|deps|hotfix|revert|ui|config|locale|a11y|seo|wip)(\([^)]+\))?: .+'
-
-print_guide() {
-	cat <<'EOF'
-Commit types (subject must be "type(scope): message"):
-  feat, fix, docs, style, refactor, perf, test, chore, build, ci, hotfix, revert, config, locale, wip
-
-Branch prefixes:
-  user-story/, task/, bugfix/, fix/, release/, docs/, refactor/, test/, chore/, ci/, experiment/
-EOF
-}
+# Source shared git-rules
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/git-rules"
 
 check_commit() {
 	sha="$1"
 	subject="$(git show -s --format=%s "$sha")"
-	if printf '%s' "$subject" | grep -Eq "$type_regex"; then
-		return 0
-	fi
-	printf 'Commit %s has invalid subject:\n  %s\n' "$sha" "$subject" >&2
-	printf 'Expected format: type(scope): message with allowed types listed below.\n' >&2
-	print_guide >&2
-	return 1
+	validate_commit_subject "$subject" "$sha"
 }
-
-print_guide
 
 while read -r local_ref local_sha remote_ref remote_sha; do
 	[ -z "$local_ref" ] && continue
@@ -45,7 +29,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 		range="$remote_sha..$local_sha"
 	fi
 
-	if ! git rev-list "$range" | while read -r commit; do check_commit "$commit"; done; then
-		exit 1
-	fi
+	for commit in $(git rev-list "$range" 2>/dev/null); do
+		check_commit "$commit" || exit 1
+	done
 done

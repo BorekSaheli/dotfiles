@@ -1,35 +1,12 @@
 #!/usr/bin/env sh
 
 # Cross-platform commit-msg hook managed by chezmoi.
-# Enforces commit subject format and shows the quick reference guide.
+# Enforces commit message format. Silent on success.
 
 set -eu
 
-type_regex='^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|hotfix|revert|config|locale|wip)(\([^)]+\)): .+'
+# Source shared git-rules
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/git-rules"
 
-print_guide() {
-	cat <<'EOF'
-Commit types (subject must be "type(scope): message"):
-  feat, fix, docs, style, refactor, perf, test, chore, build, ci, hotfix, revert, config, locale, wip
-
-Branch prefixes:
-  user-story/, task/, bugfix/, fix/, release/, docs/, refactor/, test/, chore/, ci/, experiment/
-EOF
-}
-
-msg_file="$1"
-subject="$(sed -n '1p' "$msg_file" | tr -d '\r')"
-
-# Allow merge commits to pass through untouched.
-if printf '%s' "$subject" | grep -Eq '^Merge '; then
-	exit 0
-fi
-
-if printf '%s' "$subject" | grep -Eq "$type_regex"; then
-	exit 0
-fi
-
-printf 'Commit message does not match expected format:\n  %s\n' "$subject" >&2
-printf 'Expected: type(scope): message with allowed types below.\n' >&2
-print_guide >&2
-exit 1
+validate_commit_msg "$1"
