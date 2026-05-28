@@ -1,0 +1,124 @@
+# winget configure (DSC) configuration
+#
+# Installs the full toolchain for a fresh Windows dev machine. Invoked by
+# bootstrap.ps1 via:
+#
+#     winget configure --file winget-configure.dsc.yaml `
+#         --accept-configuration-agreements --disable-interactivity
+#
+# chezmoi is installed here too, but `chezmoi init --apply` is run by
+# bootstrap.ps1 after this completes (more robust than a DSC Script resource
+# re: PATH and ordering).
+#
+# Schema reference: https://aka.ms/configuration-dsc-schema/0.2
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+properties:
+  configurationVersion: 0.2.0
+
+  assertions:
+    - resource: Microsoft.WinGet.DSC/WinGetPackageManager
+      id: winget-min-version
+      directives:
+        description: Verify winget is recent enough for `winget configure`.
+        allowPrerelease: true
+      settings:
+        MinimumVersion: 1.6.0
+
+  resources:
+    # --- Core ---------------------------------------------------------------
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: git
+      directives:
+        description: Install Git
+        allowPrerelease: true
+      settings:
+        id: Git.Git
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: powershell
+      directives:
+        description: Install PowerShell 7
+        allowPrerelease: true
+      settings:
+        id: Microsoft.PowerShell
+        source: winget
+
+    # --- Editor / terminal --------------------------------------------------
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: neovim
+      directives:
+        description: Install Neovim
+        allowPrerelease: true
+      settings:
+        id: Neovim.Neovim
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: wezterm
+      directives:
+        description: Install WezTerm
+        allowPrerelease: true
+      settings:
+        id: wez.wezterm
+        source: winget
+
+    # --- Shell prompt / git UI ----------------------------------------------
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: starship
+      directives:
+        description: Install Starship prompt
+        allowPrerelease: true
+      settings:
+        id: Starship.Starship
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: lazygit
+      directives:
+        description: Install lazygit
+        allowPrerelease: true
+      settings:
+        id: JesseDuffield.lazygit
+        source: winget
+
+    # --- Window manager -----------------------------------------------------
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: komorebi
+      directives:
+        description: Install komorebi tiling window manager
+        allowPrerelease: true
+      settings:
+        id: LGUG2Z.komorebi
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: whkd
+      directives:
+        description: Install whkd hotkey daemon
+        allowPrerelease: true
+      settings:
+        id: LGUG2Z.whkd
+        source: winget
+
+    # --- Misc ---------------------------------------------------------------
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: fastfetch
+      directives:
+        description: Install fastfetch
+        allowPrerelease: true
+      settings:
+        id: Fastfetch-cli.Fastfetch
+        source: winget
+
+    # --- Dotfiles manager ---------------------------------------------------
+    # Installed here; `chezmoi init --apply` is run by bootstrap.ps1 afterwards.
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: chezmoi
+      directives:
+        description: Install chezmoi dotfiles manager
+        allowPrerelease: true
+      settings:
+        id: twpayne.chezmoi
+        source: winget

@@ -1,3 +1,8 @@
+# Bootstrap files live in the repo only; never apply them to $HOME
+bootstrap.ps1
+winget-configure.dsc.yaml
+README.md
+
 # Platform-specific ignore patterns
 
 {{- if eq .chezmoi.os "windows" }}
