@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.37/schema.json",
-  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
+  "app_specific_configuration_path": "$Env:USERPROFILE/.config/komorebi/applications.json",
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
   "default_workspace_padding": 4,
@@ -21,11 +21,6 @@
   //   "unfocused_border": "Base03",
   //   "bar_accent": "Base0D"
   // },
-  "bar_configurations": [
-    "$Env:USERPROFILE/komorebi.bar.monitor0.json",
-    "$Env:USERPROFILE/komorebi.bar.monitor1.json",
-    "$Env:USERPROFILE/komorebi.bar.monitor2.json"
-  ],
   "animation": {
     "enabled": false,
     "duration": 150,
