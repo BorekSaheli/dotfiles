@@ -1,8 +1,9 @@
-.shell powershell
+.shell cmd
 
 # Reload whkd configuration
-# alt + o                 : taskkill /f /im whkd.exe && start /b whkd # if shell is cmd
-alt + o                 : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden # if shell is pwsh / powershell
+# To reload whkd manually run in PowerShell:
+#   taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle Hidden
+# (an in-keybind reload under .shell cmd is fragile because taskkill kills the cmd parent)
 alt + shift + o         : komorebic reload-configuration
 
 alt + i                 : komorebic toggle-shortcuts
