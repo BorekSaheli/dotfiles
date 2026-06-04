@@ -19,6 +19,13 @@ elseif is_linux then
   config.default_prog = { '/bin/zsh', '-l' }
 end
 
+-- Default working directory: open in code dir on the work machine.
+-- The path only exists there, so other machines fall back to home.
+local work_code_dir = 'C:\\Users\\borek.saheli\\code'
+if is_windows and pcall(wezterm.read_dir, work_code_dir) then
+  config.default_cwd = work_code_dir
+end
+
 -- Font configuration
 config.font = wezterm.font {
 	family = 'JetBrainsMono Nerd Font Mono',
