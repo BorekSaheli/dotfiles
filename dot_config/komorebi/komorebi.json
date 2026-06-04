@@ -1,6 +1,11 @@
 {
-  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.37/schema.json",
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.41/schema.json",
   "app_specific_configuration_path": "$Env:USERPROFILE/.config/komorebi/applications.json",
+  "bar_configurations": [
+    "$Env:USERPROFILE/.config/komorebi/komorebi_bar/komorebi.bar.monitor0.json",
+    "$Env:USERPROFILE/.config/komorebi/komorebi_bar/komorebi.bar.monitor1.json",
+    "$Env:USERPROFILE/.config/komorebi/komorebi_bar/komorebi.bar.monitor2.json"
+  ],
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
   "default_workspace_padding": 4,

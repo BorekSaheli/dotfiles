@@ -1,7 +1,7 @@
 # Script to remove komorebi autostart from Windows
 # Run this if you want to disable automatic startup
 
-$taskName = "KomorebAutostart"
+$taskName = "komorebic"
 
 Write-Host "Removing komorebi autostart..." -ForegroundColor Cyan
 

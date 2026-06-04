@@ -1,8 +1,10 @@
 # Script to register komorebi autostart with Windows Task Scheduler
 # Run this script once to set up automatic startup
 
-$taskName = "KomorebAutostart"
+$taskName = "komorebic"
 $scriptPath = "$env:USERPROFILE\.config\komorebi\autostart.ps1"
+# Full path: Task Scheduler cannot resolve the Store-installed pwsh alias from PATH
+$pwshPath = "$env:LOCALAPPDATA\Microsoft\WindowsApps\pwsh.exe"
 
 # Check if task already exists
 $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
@@ -13,7 +15,7 @@ if ($existingTask) {
 }
 
 # Create the action to run PowerShell with the autostart script (completely hidden)
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-WindowStyle Hidden -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$scriptPath`""
+$action = New-ScheduledTaskAction -Execute $pwshPath -Argument "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`"" -WorkingDirectory "$env:USERPROFILE\.config\komorebi\"
 
 # Create the trigger to run at logon
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME

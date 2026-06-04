@@ -27,7 +27,7 @@ Set-Alias activate venv\Scripts\Activate
 
 # Komorebi functions
 function ks {
-    # Check if running as administrator
+    # Check if running as administrator (komorebi inherits elevation from this shell)
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
     if ($isAdmin) {
@@ -36,55 +36,10 @@ function ks {
         Write-Host "Starting komorebi..."
     }
 
-    # Start komorebi with custom config path
-    $komorebicConfig = "$env:KOMOREBI_CONFIG_HOME\komorebi.json"
-    $whkdConfig = "$env:KOMOREBI_CONFIG_HOME\whkdrc"
-
-    # Start komorebi first (it needs to be running for bar and whkd)
-    if ($isAdmin) {
-        # When running from admin window, start komorebi.exe directly with admin privileges
-        $komorebiPath = (Get-Command komorebic).Source -replace 'komorebic\.exe$', 'komorebi.exe'
-        Start-Process -Verb RunAs -WindowStyle Hidden $komorebiPath -ArgumentList "--config", $komorebicConfig
-    } else {
-        # Normal non-admin start
-        komorebic start -c $komorebicConfig | Out-Null
-    }
-
-    # Wait a moment for komorebi to initialize
-    Start-Sleep -Seconds 2
-
-    # Start whkd with custom config (if installed)
-    if (Get-Command whkd -ErrorAction SilentlyContinue) {
-        if ($isAdmin) {
-            Start-Process -Verb RunAs -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
-        } else {
-            Start-Process -WindowStyle Hidden whkd -ArgumentList "-c", $whkdConfig
-        }
-    } else {
-        Write-Host "Warning: whkd not found. Install with: winget install LGUG2Z.whkd"
-    }
-
-    # Start komorebi-bar instances for each monitor (skip generic config to avoid conflicts)
-    # Add delay to ensure komorebi is fully initialized
-    Start-Sleep -Seconds 1
-
-    $barConfigs = @(
-        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor0.json",
-        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor1.json",
-        "$env:KOMOREBI_CONFIG_HOME\komorebi_bar\komorebi.bar.monitor2.json"
-    )
-
-    foreach ($config in $barConfigs) {
-        if (Test-Path $config) {
-            Write-Host "Starting bar with config: $config"
-            if ($isAdmin) {
-                Start-Process -Verb RunAs -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
-            } else {
-                Start-Process -WindowStyle Hidden komorebi-bar -ArgumentList "-c", $config
-            }
-            Start-Sleep -Milliseconds 500
-        }
-    }
+    # Single source of truth: same script the logon task runs.
+    # komorebi starts whkd and the bars (bar_configurations in
+    # komorebi.json) itself once it is ready - no sleeps needed.
+    & "$env:USERPROFILE\.config\komorebi\autostart.ps1"
 }
 function kq {
     Write-Host "Closing komorebi..."
