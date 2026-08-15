@@ -1,20 +1,53 @@
-# Prioritize Homebrew Python and global tools
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+# ~/.zshrc — interactive shell config, shared between macOS and Fedora.
+# Everything optional is guarded by "command -v" / file checks so the same
+# file works on a machine that has none of the extras installed.
 
-# Aliases
-alias ff='fastfetch'
+# ---- History -----------------------------------------------------------------
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt share_history          # one history across all open shells
+setopt hist_ignore_all_dups   # keep only the latest copy of a command
+setopt hist_ignore_space      # " cmd" is not recorded
+setopt inc_append_history
+
+# ---- Completion --------------------------------------------------------------
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'   # case-insensitive
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# ---- Aliases -----------------------------------------------------------------
 alias vim='nvim'
 alias vi='nvim'
 alias v='nvim'
-
-# Starship configuration
-export STARSHIP_CONFIG=~/.config/starship/starship.toml
-eval "$(starship init zsh)"
-
-# Conda setup - available but not auto-activated
-# Use 'conda activate <env>' manually when needed
-if [ -f "/Users/borek/tudelft-conda/etc/profile.d/conda.sh" ]; then
-    . "/Users/borek/tudelft-conda/etc/profile.d/conda.sh"
-    # Disable conda's auto prompt modification - let Starship handle it
-    conda config --set changeps1 false 2>/dev/null
+alias ff='fastfetch'
+if command -v eza >/dev/null; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -l --icons --git --group-directories-first'
+  alias la='eza -la --icons --git --group-directories-first'
+  alias tree='eza --tree --icons'
 fi
+
+# ---- Tools (only if installed) -----------------------------------------------
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"       # z <dir>
+command -v fzf    >/dev/null && source <(fzf --zsh)              # Ctrl-R / Ctrl-T
+
+export STARSHIP_CONFIG=~/.config/starship/starship.toml
+command -v starship >/dev/null && eval "$(starship init zsh)"
+
+# Conda (TU Delft install on the mac) — available, not auto-activated.
+if [[ -f "$HOME/tudelft-conda/etc/profile.d/conda.sh" ]]; then
+  source "$HOME/tudelft-conda/etc/profile.d/conda.sh"
+  conda config --set changeps1 false 2>/dev/null   # starship owns the prompt
+fi
+
+# ---- Plugins -----------------------------------------------------------------
+# First existing path wins: Fedora (dnf) → macOS (brew).
+_source_first() { local f; for f in "$@"; do [[ -r $f ]] && { source "$f"; return; }; done }
+_source_first /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+              /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# syntax-highlighting must be sourced last.
+_source_first /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+              /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+unfunction _source_first

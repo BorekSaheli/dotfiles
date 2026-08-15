@@ -1,3 +1,7 @@
+# ~/.zprofile — login-shell environment (sourced once). Interactive stuff goes in .zshrc.
 
-# Created by `pipx` on 2025-09-02 16:24:16
-export PATH="$PATH:/Users/borek/.local/bin"
+# Homebrew (macOS) first so its python/tools win over system ones.
+[[ -d /opt/homebrew/bin ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+
+# User binaries (pipx, cargo, uv, claude, ...).
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
